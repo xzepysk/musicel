@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 
-const ENTITY_MAP = {
-  song: "song",
-  album: "album",
-  artist: "musicArtist"
-};
+const RELAY_BASE = "http://benben.seyori.name.ng:2054/api/relay";
+
+function relay(targetUrl) {
+  return `${RELAY_BASE}?url=${encodeURIComponent(targetUrl)}`;
+}
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -15,15 +15,11 @@ export async function GET(request) {
     return NextResponse.json({ results: [] });
   }
 
-  const url = `https://api-faa.my.id/faa/youtube?q=${encodeURIComponent(term)}`;
+  const url = relay(`https://api-faa.my.id/faa/youtube?q=${encodeURIComponent(term)}`);
 
   try {
     const res = await fetch(url, {
       next: { revalidate: 60 },
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-        "Accept": "application/json",
-      },
     });
     const bodyText = await res.text();
     if (!res.ok) throw new Error(`API returned ${res.status}: ${bodyText.slice(0, 200)}`);
