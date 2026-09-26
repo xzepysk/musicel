@@ -20,7 +20,7 @@ export async function GET(request) {
   try {
     const res = await fetch(url, { next: { revalidate: 60 } });
     if (!res.ok) throw new Error(`API returned ${res.status}`);
-    const { data } = res;
+    const { data } = await res.json();
 
     if (!data.status || !data.result) {
       return NextResponse.json({ results: [] });
