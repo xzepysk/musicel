@@ -21,7 +21,7 @@ export async function GET(request) {
     const res = await fetch(url, {
       next: { revalidate: 60 },
     });
-    const bodyText = await res.text();
+    const bodyText = await res.json();
     if (!res.ok) throw new Error(`API returned ${res.status}: ${bodyText.slice(0, 200)}`);
     let parsed;
     try {
@@ -29,7 +29,7 @@ export async function GET(request) {
     } catch {
       throw new Error(`Non-JSON response: ${bodyText.slice(0, 200)}`);
     }
-    const { data } = parsed;
+    const data = parsed;
 
     if (!data.status || !data.result) {
       return NextResponse.json({ results: [] });
