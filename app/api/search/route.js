@@ -18,9 +18,7 @@ export async function GET(request) {
   const url = relay(`https://api-faa.my.id/faa/youtube?q=${encodeURIComponent(term)}`);
 
   try {
-    const res = await fetch(url, {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(url, {});
     const bodyText = await res.json();
     if (!res.ok) throw new Error(`API returned ${res.status}: ${bodyText.slice(0, 200)}`);
     let parsed;
@@ -56,7 +54,7 @@ export async function GET(request) {
         releaseDate: item.publishedTime || item.releaseDate || null,
         videoId: videoId,
         link: link,
-        mp3Api: `https://api-faa.my.id/faa/ytmp3?url=${encodeURIComponent('https://youtube.com/watch?v=' + videoId)}`
+        mp3Api: relay(`https://api-faa.my.id/faa/ytmp3?url=${encodeURIComponent('https://youtube.com/watch?v=' + videoId)}`)
       };
     });
 
