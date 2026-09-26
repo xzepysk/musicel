@@ -58,7 +58,7 @@ export async function GET(request) {
         releaseDate: item.publishedTime || item.releaseDate || null,
         videoId: videoId,
         link: link,
-        mp3Api: relay(`https://api-faa.my.id/faa/ytmp3?url=${encodeURIComponent('https://youtube.com/watch?v=' + videoId)}`)
+        mp3Api: `https://api-faa.my.id/faa/ytmp3?url=${encodeURIComponent('https://youtube.com/watch?v=' + videoId)}`
       };
     });
 
@@ -66,5 +66,5 @@ export async function GET(request) {
   } catch (err) {
     console.error("SEARCH_ERROR:", err.message);
     return NextResponse.json({ results: [], error: "Search failed, try again.", debug: err.message }, { status: 502 });
-  }
-    }
+  }                                            
+}
