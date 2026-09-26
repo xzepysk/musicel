@@ -18,16 +18,20 @@ export async function GET(request) {
   const url = relay(`https://api-faa.my.id/faa/youtube?q=${encodeURIComponent(term)}`);
 
   try {
-    const res = await fetch(url, {});
-    const bodyText = await res.json();
-    if (!res.ok) throw new Error(`API returned ${res.status}: ${bodyText.slice(0, 200)}`);
-    let parsed;
+    const res = await fetch(url);
+
+    const bodyText = await res.text();
+
+    if (!res.ok) {
+      throw new Error(`API returned ${res.status}: ${bodyText.slice(0, 200)}`);
+    }
+
+    let data;
     try {
-      parsed = JSON.parse(bodyText);
+      data = JSON.parse(bodyText);
     } catch {
       throw new Error(`Non-JSON response: ${bodyText.slice(0, 200)}`);
     }
-    const data = parsed;
 
     if (!data.status || !data.result) {
       return NextResponse.json({ results: [] });
@@ -63,4 +67,4 @@ export async function GET(request) {
     console.error("SEARCH_ERROR:", err.message);
     return NextResponse.json({ results: [], error: "Search failed, try again.", debug: err.message }, { status: 502 });
   }
-}
+    }
