@@ -19,7 +19,7 @@ export function AudioProvider({ children }) {
   const [lyrics, setLyrics] = useState([]);
   const [showQueue, setShowQueue] = useState(false);
 
-  function playTrack(track, fullList = []) {
+  async function playTrack(track, fullList = []) {
     if (fullList.length > 0) {
       setQueue(fullList);
       setOriginalQueue(fullList);
@@ -27,10 +27,15 @@ export function AudioProvider({ children }) {
     setPlaying(track);
     setLyrics([]);
     fetch(`/api/lyrics?q=${encodeURIComponent(track.title + " " + track.artist)}`).then(r => r.json()).then(d => setLyrics(d.lyrics || [])).catch(() => {});
-    setTimeout(() => {
+    try {
+      const res = await fetch(track.mp3Api);
+      const json = await res.json();
+      const mp3 = json.result?.mp3 || json.result?.url;
+      if (!mp3) throw new Error("MP3 not found");
+      const proxied = `/api/stream?url=${encodeURIComponent(mp3)}`;
       const a = audioRef.current;
       if (!a) return;
-      a.src = track.mp3Api?.startsWith("/api")? track.mp3Api : `/api/mp3?q=${encodeURIComponent(track.title + " " + track.artist)}`;
+      a.src = proxied;
       a.volume = isMuted? 0 : volume;
       a.play().then(() => setIsPlaying(true)).catch(() => {});
       if ("mediaSession" in navigator) {
@@ -40,7 +45,9 @@ export function AudioProvider({ children }) {
           artwork: [{ src: track.artworkUrl, sizes: "512x512" }]
         });
       }
-    }, 0);
+    } catch (e) {
+      console.error("PLAY_ERROR:", e.message);
+    }
   }
 
   function togglePlay() {
