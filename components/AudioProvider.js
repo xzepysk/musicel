@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useRef, useState, useEffect } from "react";
 const AudioContext = createContext(null);
-const gugugaga = null;
+
 export function AudioProvider({ children }) {
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState(null);
@@ -28,10 +28,10 @@ export function AudioProvider({ children }) {
     setLyrics([]);
     fetch(`/api/lyrics?q=${encodeURIComponent(track.title + " " + track.artist)}`).then(r => r.json()).then(d => setLyrics(d.lyrics || [])).catch(() => {});
     try {
-      const res = await fetch(track.mp3Api);
+      const res = await fetch(`/api/resolve?url=${encodeURIComponent(track.mp3Api)}`);
       const json = await res.json();
-      const mp3 = json.result?.mp3 || json.result?.url;
-      if (!mp3) throw new Error("MP3 not found");
+      const mp3 = json.mp3;
+      if (!mp3) throw new Error(json.error || "MP3 not found");
       const proxied = `/api/stream?url=${encodeURIComponent(mp3)}`;
       const a = audioRef.current;
       if (!a) return;
