@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useRef, useState, useEffect } from "react";
 const AudioContext = createContext(null);
-
+const gugugaga = null;
 export function AudioProvider({ children }) {
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState(null);
