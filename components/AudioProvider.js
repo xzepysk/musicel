@@ -25,6 +25,7 @@ export function AudioProvider({ children }) {
       setOriginalQueue(fullList);
     }
     setPlaying(track);
+    setIsPlaying(false);
     setLyrics([]);
     fetch(`/api/lyrics?q=${encodeURIComponent(track.title + " " + track.artist)}`).then(r => r.json()).then(d => setLyrics(d.lyrics || [])).catch(() => {});
     try {
@@ -46,7 +47,15 @@ export function AudioProvider({ children }) {
         });
       }
     } catch (e) {
-      console.error("PLAY_ERROR:", e.message);
+      console.error("PLAY_ERROR:", e.message, "track:", track.title);
+      // gagal resolve mp3 buat lagu ini, jangan stuck diem - lanjut ke next kalau ada
+      setQueue(currentQueue => {
+        const idx = currentQueue.findIndex(t => t.externalId === track.externalId);
+        if (idx >= 0 && idx < currentQueue.length - 1) {
+          playTrack(currentQueue[idx + 1]);
+        }
+        return currentQueue;
+      });
     }
   }
 
@@ -136,37 +145,37 @@ export function AudioProvider({ children }) {
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6 }}>
               <img src={playing.artworkUrl} style={{ width: 44, height: 44, borderRadius: 6 }} />
               <div style={{ flex: 1, overflow: "hidden" }}><p style={{ fontSize: 13, fontWeight: 600, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{playing.title}</p><p style={{ fontSize: 11, color: "#a1a1aa" }}>{playing.artist}</p></div>
-              <button onClick={e => { e.stopPropagation(); skipBackward(); }} style={{ color: "#fff", border: "1px solid #333", borderRadius: 20, padding: "5px 9px", fontSize: 11 }}>-10</button>
-              <button onClick={e => { e.stopPropagation(); togglePlay(); }} style={{ background: "#fff", color: "#000", borderRadius: 999, width: 34, height: 34, fontWeight: 800 }}>{isPlaying? "II" : "▶"}</button>
-              <button onClick={e => { e.stopPropagation(); skipForward(); }} style={{ color: "#fff", border: "1px solid #333", borderRadius: 20, padding: "5px 9px", fontSize: 11 }}>+10</button>
+              <button onClick={e => { e.stopPropagation(); skipBackward(); }} style={{ background: "transparent", border: "1px solid #333", borderRadius: 20, padding: "5px 9px", fontSize: 13, color: "#fff" }}>↺</button>
+              <button onClick={e => { e.stopPropagation(); togglePlay(); }} style={{ background: "#fff", color: "#000", borderRadius: 999, width: 34, height: 34, fontWeight: 800, border: "none" }}>{isPlaying? "II" : "▶"}</button>
+              <button onClick={e => { e.stopPropagation(); skipForward(); }} style={{ background: "transparent", border: "1px solid #333", borderRadius: 20, padding: "5px 9px", fontSize: 13, color: "#fff" }}>↻</button>
             </div>
           </div>
           {isExpanded && (
             <div style={{ position: "fixed", inset: 0, background: "#000", zIndex: 100, padding: 20, display: "flex", flexDirection: "column" }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}><button onClick={() => setIsExpanded(false)} style={{ color: "#fff" }}>⌄</button><button onClick={() => setShowQueue(!showQueue)} style={{ color: "#fff" }}>☰ Queue</button></div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}><button onClick={() => setIsExpanded(false)} style={{ background: "transparent", border: "none", color: "#fff", fontSize: 20 }}>⌄</button><button onClick={() => setShowQueue(!showQueue)} style={{ background: "transparent", border: "none", color: "#fff" }}>☰ Queue</button></div>
               <img src={playing.artworkUrl} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 20, marginTop: 20 }} />
               <div style={{ marginTop: 16 }}><h2 style={{ color: "#fff", fontSize: 22, fontWeight: 700 }}>{playing.title}</h2><p style={{ color: "#a1a1aa" }}>{playing.artist}</p></div>
               <div style={{ flex: 1, overflowY: "auto", marginTop: 16, background: "#111", borderRadius: 12, padding: 12 }}>{lyrics.length > 0? lyrics.map((l, i) => <p key={i} style={{ color: Math.abs(l.time - currentTime) < 2? "#fff" : "#555", fontSize: 14, margin: "4px 0" }}>{l.text}</p>) : <p style={{ color: "#555" }}>No lyrics</p>}</div>
               <input type="range" min={0} max={duration || 100} value={currentTime} onChange={e => seek(Number(e.target.value))} style={{ width: "100%", accentColor: "#fff", marginTop: 12 }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
-                <button onClick={toggleShuffle} style={{ color: isShuffle? "#1DB954" : "#fff" }}>🔀</button>
-                <button onClick={playPrev} style={{ color: "#fff", fontSize: 20 }}>⏮</button>
-                <button onClick={skipBackward} style={{ color: "#fff", border: "1px solid #333", borderRadius: 20, padding: "6px 12px" }}>-10s</button>
-                <button onClick={togglePlay} style={{ background: "#fff", width: 64, height: 64, borderRadius: 999, fontSize: 24 }}>{isPlaying? "II" : "▶"}</button>
-                <button onClick={skipForward} style={{ color: "#fff", border: "1px solid #333", borderRadius: 20, padding: "6px 12px" }}>+10s</button>
-                <button onClick={playNext} style={{ color: "#fff", fontSize: 20 }}>⏭</button>
-                <button onClick={toggleRepeat} style={{ color: repeatMode!== "off"? "#1DB954" : "#fff" }}>{repeatMode === "one"? "🔂" : "🔁"}</button>
+                <button onClick={toggleShuffle} style={{ background: "transparent", border: "none", color: isShuffle? "#1DB954" : "#fff", fontSize: 18 }}>🔀</button>
+                <button onClick={playPrev} style={{ background: "transparent", border: "none", color: "#fff", fontSize: 20 }}>⏮</button>
+                <button onClick={skipBackward} style={{ background: "transparent", border: "1px solid #333", borderRadius: 20, padding: "6px 12px", color: "#fff", fontSize: 16 }}>↺</button>
+                <button onClick={togglePlay} style={{ background: "#fff", width: 64, height: 64, borderRadius: 999, fontSize: 24, border: "none" }}>{isPlaying? "II" : "▶"}</button>
+                <button onClick={skipForward} style={{ background: "transparent", border: "1px solid #333", borderRadius: 20, padding: "6px 12px", color: "#fff", fontSize: 16 }}>↻</button>
+                <button onClick={playNext} style={{ background: "transparent", border: "none", color: "#fff", fontSize: 20 }}>⏭</button>
+                <button onClick={toggleRepeat} style={{ background: "transparent", border: "none", color: repeatMode!== "off"? "#1DB954" : "#fff", fontSize: 18 }}>{repeatMode === "one"? "🔂" : "🔁"}</button>
               </div>
               <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
                 <input type="range" min={0} max={1} step={0.01} value={volume} onChange={e => setVol(Number(e.target.value))} style={{ flex: 1 }} />
-                <button onClick={downloadCurrent} style={{ color: "#fff", border: "1px solid #333", padding: "6px 12px", borderRadius: 20, fontSize: 12 }}>⬇ Download</button>
+                <button onClick={downloadCurrent} style={{ background: "transparent", border: "1px solid #333", padding: "6px 12px", borderRadius: 20, fontSize: 12, color: "#fff" }}>⬇ Download</button>
                 <select value={sleepTimer || ""} onChange={e => setSleepTimer(e.target.value? Number(e.target.value) : null)} style={{ background: "#222", color: "#fff", borderRadius: 20, padding: "4px 8px" }}><option value="">Sleep</option><option value="15">15m</option><option value="30">30m</option><option value="60">60m</option></select>
               </div>
             </div>
           )}
           {showQueue && (
             <div style={{ position: "fixed", inset: 0, top: "30%", background: "#18181b", zIndex: 110, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, overflowY: "auto" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}><h3 style={{ color: "#fff" }}>Up Next</h3><button onClick={() => setShowQueue(false)} style={{ color: "#fff" }}>✕</button></div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}><h3 style={{ color: "#fff" }}>Up Next</h3><button onClick={() => setShowQueue(false)} style={{ background: "transparent", border: "none", color: "#fff", fontSize: 16 }}>✕</button></div>
               {queue.map(t => <div key={t.externalId} onClick={() => playTrack(t)} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid #222", opacity: playing.externalId === t.externalId? 1 : 0.6 }}><img src={t.artworkUrl} style={{ width: 40, height: 40, borderRadius: 6 }} /><div><p style={{ color: "#fff", fontSize: 13 }}>{t.title}</p><p style={{ color: "#888", fontSize: 11 }}>{t.artist}</p></div></div>)}
             </div>
           )}
