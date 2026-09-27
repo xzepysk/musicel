@@ -150,8 +150,14 @@ export function AudioProvider({ children }) {
               <button onClick={e => { e.stopPropagation(); skipForward(); }} style={{ background: "transparent", border: "1px solid #333", borderRadius: 20, padding: "5px 9px", fontSize: 13, color: "#fff" }}>↻</button>
             </div>
           </div>
-          {isExpanded && (
-            <div style={{ position: "fixed", inset: 0, background: "#000", zIndex: 100, padding: 20, display: "flex", flexDirection: "column" }}>
+          <div
+            style={{
+              position: "fixed", inset: 0, background: "#000", zIndex: 100, padding: 20, display: "flex", flexDirection: "column",
+              transform: isExpanded? "translateY(0)" : "translateY(100%)",
+              transition: "transform 340ms cubic-bezier(0.32, 0.72, 0, 1)",
+              pointerEvents: isExpanded? "auto" : "none",
+            }}
+          >
               <div style={{ display: "flex", justifyContent: "space-between" }}><button onClick={() => setIsExpanded(false)} style={{ background: "transparent", border: "none", color: "#fff", fontSize: 20 }}>⌄</button><button onClick={() => setShowQueue(!showQueue)} style={{ background: "transparent", border: "none", color: "#fff" }}>☰ Queue</button></div>
               <img src={playing.artworkUrl} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 20, marginTop: 20 }} />
               <div style={{ marginTop: 16 }}><h2 style={{ color: "#fff", fontSize: 22, fontWeight: 700 }}>{playing.title}</h2><p style={{ color: "#a1a1aa" }}>{playing.artist}</p></div>
@@ -171,14 +177,18 @@ export function AudioProvider({ children }) {
                 <button onClick={downloadCurrent} style={{ background: "transparent", border: "1px solid #333", padding: "6px 12px", borderRadius: 20, fontSize: 12, color: "#fff" }}>⬇ Download</button>
                 <select value={sleepTimer || ""} onChange={e => setSleepTimer(e.target.value? Number(e.target.value) : null)} style={{ background: "#222", color: "#fff", borderRadius: 20, padding: "4px 8px" }}><option value="">Sleep</option><option value="15">15m</option><option value="30">30m</option><option value="60">60m</option></select>
               </div>
-            </div>
-          )}
-          {showQueue && (
-            <div style={{ position: "fixed", inset: 0, top: "30%", background: "#18181b", zIndex: 110, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, overflowY: "auto" }}>
+          </div>
+          <div
+            style={{
+              position: "fixed", inset: 0, top: "30%", background: "#18181b", zIndex: 110, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, overflowY: "auto",
+              transform: showQueue? "translateY(0)" : "translateY(100%)",
+              transition: "transform 280ms cubic-bezier(0.32, 0.72, 0, 1)",
+              pointerEvents: showQueue? "auto" : "none",
+            }}
+          >
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}><h3 style={{ color: "#fff" }}>Up Next</h3><button onClick={() => setShowQueue(false)} style={{ background: "transparent", border: "none", color: "#fff", fontSize: 16 }}>✕</button></div>
               {queue.map(t => <div key={t.externalId} onClick={() => playTrack(t)} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid #222", opacity: playing.externalId === t.externalId? 1 : 0.6 }}><img src={t.artworkUrl} style={{ width: 40, height: 40, borderRadius: 6 }} /><div><p style={{ color: "#fff", fontSize: 13 }}>{t.title}</p><p style={{ color: "#888", fontSize: 11 }}>{t.artist}</p></div></div>)}
-            </div>
-          )}
+          </div>
         </>
       )}
     </AudioContext.Provider>
